@@ -268,7 +268,11 @@ h1 .dim{color:var(--muted);}
 
 .sub{
   margin:6rem 0 0;
-  max-width:352rem;
+  /* 27.94em === the measured 352 at the reference 12.6 size. In `em` the
+     container floors together with the font's legibility floor, so the
+     reference's two-line break holds at every width; in `rem` it kept
+     shrinking past the floored text and spilled to three lines by 1330. */
+  max-width:27.9365em;
   font-size:max(12.5px,12.6rem);
   font-weight:400;
   line-height:1.33;
@@ -510,63 +514,113 @@ h1 .dim{color:var(--muted);}
   border-top:var(--hairline) solid rgba(38,38,31,.14);
 }
 .drawer a:first-child{border-top:0;}
+.drawer a.drawer-cta{display:none;}
 
 /* ================================================================== *
  *  RESPONSIVE
- *  The scale above is continuous across every width, so proportions
- *  never jump. These blocks only change *layout* — where things sit and
- *  how big the touch targets are — never the scale.
+ *
+ *  ONE architectural breakpoint, placed where the design actually runs
+ *  out of room rather than at a device width. Measured by sweeping the
+ *  desktop composition down in 20px steps:
+ *
+ *    1440 -> 1040   scale falls 1.00 -> 0.72; every proportion holds,
+ *                   nav clearance 191 -> 122, nothing collides.
+ *    1037           the scale clamp bottoms out. Below here the design
+ *                   no longer scales - it only loses clearance - and the
+ *                   nav (11px) and controls (23px) are already sitting
+ *                   on their legibility floors.
+ *     900           nav-to-actions clearance down to 52.
+ *     800           nav and actions collide (clearance 0).
+ *
+ *  So 1040 is the last width at which the desktop architecture is still
+ *  doing its job, and every viewport below it is touch-first. That is
+ *  the breakpoint. Above it this stylesheet changes nothing whatsoever.
+ *
+ *  The two narrower breakpoints are content-driven, not device-driven:
+ *  780 is where the customer wordmarks crowd their cells (slack < 20px),
+ *  620 is where the preview needs the full frame width to stay legible.
  * ================================================================== */
 
-/* --- nav folds into a drawer once the six labels stop fitting ----- */
-@media (max-width:1180px){
+/* ---------------- TABLET ------------------------------------------ *
+ *  Same composition, same components, re-proportioned for touch: the
+ *  six nav labels move into a drawer built from the site's own surface,
+ *  hairline and type; controls grow to touch size; the preview claims
+ *  more width now that it is no longer competing with a wide hero.
+ * ------------------------------------------------------------------ */
+@media (max-width:1040px){
+  :root{
+    --pad-x:22px;  --pad-t:20px; --pad-b:19px;
+    --hdr-h:60px;  --hatch-h:10px; --strip-h:84px;
+  }
+
+  /* nav -> drawer */
   .nav{display:none;}
-  .burger{display:inline-flex;width:38px;height:38px;}
-  .burger span{width:16px;height:1px;}
+  .burger{display:inline-flex;width:42px;height:42px;}
+  .burger span{width:17px;height:1px;}
   .burger span::before{top:-5px;}
   .burger span::after{top:5px;}
   .burger[aria-expanded="true"] span::before{transform:translateY(5px) rotate(45deg);}
   .burger[aria-expanded="true"] span::after{transform:translateY(-5px) rotate(-45deg);}
   .drawer.is-open{display:block;}
-  .drawer{padding:4px 16px 12px;}
-  .drawer a{padding:12px 0;font-size:15px;}
-  .header{gap:14rem;}
-  /* touch-sized controls from here down */
+  .drawer{padding:2px 20px 14px;}
+  .drawer a{padding:13px 0;font-size:15px;}
+  .header{padding:0 14px;gap:12px;}
+  .brand svg{width:32px;height:32px;}
+
+  /* touch-sized controls, same shapes */
   .btn{height:38px;min-width:0;padding:0 20px;font-size:13px;}
   .cta{margin-top:18px;gap:8px;}
-  .cta .btn{height:40px;min-width:0;padding:0 22px;font-size:13.5px;}
-}
+  .cta .btn{height:42px;min-width:0;padding:0 24px;font-size:13.5px;}
 
-/* --- tablet: touch-sized controls, wider preview ------------------ */
-@media (max-width:900px){
-  :root{--pad-x:20rem;--pad-t:20rem;--pad-b:19rem;}
+  /* hero: headline holds the size it had at the breakpoint */
   h1{font-size:clamp(22px, 7.4vw, 36px);letter-spacing:-0.03em;line-height:1.09;}
-  .sub{max-width:min(340rem, 82%);}
+  .sub{max-width:min(27.9365em, 84%);}
+  .copy{padding-left:20px;padding-right:20px;}
   .lead{min-height:30px;}
   .gutter{min-height:22px;}
+
   .editor{width:80%;}
-  .cell img{max-height:64rem;}
+  .cell img{max-height:52px;}
 }
 
-/* --- portrait / tall screens: the preview widens so the hero reads
-       as a composition rather than a strip pinned to the bottom ----- */
-@media (min-width:681px) and (max-aspect-ratio:4/5){
-  .editor{width:86%;}
+/* --- portrait / tall screens ---------------------------------------
+ *  The preview's height is capped by its width, so on a tall viewport
+ *  the stage cannot spend its whole share and the surplus collects as
+ *  a void above the preview. Shifting grow from the stage to the lead
+ *  settles the copy toward optical centre and splits the air evenly
+ *  above and below it, instead of pinning the copy to the top rule.
+ * ------------------------------------------------------------------ */
+@media (max-aspect-ratio:4/5){
+  .lead{flex-grow:36;}
+  .gutter{flex-grow:12;}
+}
+@media (min-width:621px) and (max-aspect-ratio:4/5){
+  .editor{width:88%;}
 }
 
-/* --- large phone / small tablet ---------------------------------- */
-@media (max-width:680px){
-  :root{--hdr-h:60px;--hatch-h:10px;--strip-h:104px;}
+/* --- customer strip goes 2x2 once the wordmarks crowd their cells -- */
+@media (max-width:780px){
+  :root{--strip-h:112px;}
+  .strip{grid-template-columns:repeat(2,1fr);}
+  .cell{border-left:0;padding:0 14px;}
+  .cell:nth-child(even){border-left:var(--hairline) solid var(--rule);}
+  .cell:nth-child(n+3){border-top:var(--hairline) solid var(--rule);}
+  .cell img{max-height:36px;}
+  .cell--europa img{width:126px;}
+  .cell--eclipseful img{width:145px;}
+  .cell--ikigai img{width:173px;}
+  .cell--eightball img{width:129px;}
+}
+
+/* --- phone: preview takes the full frame width -------------------- */
+@media (max-width:620px){
+  :root{--hdr-h:56px;--strip-h:104px;}
   .header{padding:0 14px;}
   .brand svg{width:30px;height:30px;}
   .copy{padding-left:16px;padding-right:16px;}
-  .sub{margin-top:10px;font-size:13.5px;line-height:1.4;max-width:330px;}
+  .sub{margin-top:10px;font-size:13.5px;line-height:1.4;max-width:min(26em,90%);}
   .stage{padding:0 16px;}
   .editor{width:100%;border-radius:7px 7px 0 0;}
-  .strip{grid-template-columns:repeat(2,1fr);}
-  .cell{border-left:0;padding:0 12px;}
-  .cell:nth-child(even){border-left:var(--hairline) solid var(--rule);}
-  .cell:nth-child(n+3){border-top:var(--hairline) solid var(--rule);}
   .cell img{max-height:34px;}
   .cell--europa img{width:118px;}
   .cell--eclipseful img{width:136px;}
@@ -574,16 +628,16 @@ h1 .dim{color:var(--muted);}
   .cell--eightball img{width:121px;}
 }
 
-/* --- phone -------------------------------------------------------- */
+/* --- small phone -------------------------------------------------- */
 @media (max-width:460px){
-  :root{--pad-x:12px;--pad-t:12px;--pad-b:12px;--hdr-h:56px;--strip-h:96px;}
+  :root{--pad-x:12px;--pad-t:12px;--pad-b:12px;--hdr-h:54px;--strip-h:96px;}
   .header{padding:0 11px;gap:10px;}
-  .actions .btn--ghost{display:none;}      /* one unambiguous primary action */
+  .actions .btn--ghost{display:none;}   /* Sign In moves into the drawer */
+  .drawer a.drawer-cta{display:block;}
   .btn{padding:0 16px;height:36px;}
   .copy{padding-left:12px;padding-right:12px;}
-  .sub{max-width:300px;font-size:13px;}
   .cta{gap:8px;}
-  .cta .btn{padding:0 18px;font-size:13px;}
+  .cta .btn{height:40px;padding:0 18px;font-size:13px;}
   .stage{padding:0 12px;}
   .cell--europa img{width:104px;}
   .cell--eclipseful img{width:120px;}
@@ -631,6 +685,7 @@ h1 .dim{color:var(--muted);}
       <a href="#">Enterprise</a>
       <a href="#">Clients</a>
       <a href="#">Pricing</a>
+      <a href="#" class="drawer-cta">Sign In</a>
     </div>
   </header>
 
