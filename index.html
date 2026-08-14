@@ -617,38 +617,75 @@ h1 .dim{color:var(--muted);}
   .cell--eightball img{width:129px;}
 }
 
-/* --- phone: preview takes the full frame width -------------------- */
-@media (max-width:620px){
-  :root{--hdr-h:56px;--strip-h:104px;}
-  .header{padding:0 14px;}
+/* ================================================================== *
+ *  MOBILE
+ *
+ *  Breakpoint measured, not assumed. Sweeping the tablet architecture
+ *  down in 10px steps, its composition survives further than any
+ *  conventional phone breakpoint:
+ *
+ *    620 -> 480   headline holds one line, support copy holds, CTA pair
+ *                 sits side by side, logo cells keep 22px+ of slack
+ *    470          headline clearance down to 4px - the last width that
+ *                 still technically works
+ *    460          headline breaks to three lines, orphaning "Swear"
+ *    360          the CTA pair no longer fits side by side
+ *    350          the header row goes tight
+ *
+ *  So the tablet architecture runs to 471 and the mobile architecture
+ *  starts at 470, where the headline actually fails.
+ *
+ *  The mobile move is not "stack everything". The composition is already
+ *  a centred single column, so what changes is proportion and one real
+ *  architectural change: the preview stops being a fixed-ratio strip
+ *  with dead air above it and instead fills the stage, revealing more of
+ *  the same mock rather than floating in empty space.
+ * ================================================================== */
+@media (max-width:470px){
+  :root{
+    --pad-x:clamp(12px, 4.7vw, 22px);
+    --pad-t:14px; --pad-b:14px;
+    --hdr-h:56px; --strip-h:104px;
+  }
+  /* respect notches when the frame is this close to the screen edge */
+  body{
+    padding-left:max(var(--pad-x), env(safe-area-inset-left));
+    padding-right:max(var(--pad-x), env(safe-area-inset-right));
+    padding-bottom:max(var(--pad-b), env(safe-area-inset-bottom));
+  }
+
+  .header{padding:0 clamp(10px, 3.6vw, 14px);gap:10px;}
   .brand svg{width:30px;height:30px;}
-  .copy{padding-left:16px;padding-right:16px;}
-  h1{font-size:clamp(26px, 6.05vw, 37.5px);}
-  .sub{margin-top:10px;font-size:14px;line-height:1.42;max-width:min(26em,90%);}
-  .stage{padding:0 16px;}
-  .editor{width:100%;border-radius:7px 7px 0 0;}
+  .btn{height:40px;padding:0 clamp(12px, 4.6vw, 22px);font-size:13.5px;}
+
+  /* headline tracks the width it can actually hold on one line, so the
+     reference's two-line composition survives to 300px */
+  .copy{padding-left:clamp(10px, 4vw, 16px);padding-right:clamp(10px, 4vw, 16px);}
+  h1{font-size:clamp(20px, calc(8.33vw - 5.16px), 34px);}
+  .sub{margin-top:10px;font-size:14px;line-height:1.42;max-width:min(26em, 94%);}
+
+  /* CTAs stay side by side - the pair is part of the composition - and
+     give up padding rather than breaking to full width */
+  .cta{margin-top:20px;gap:10px;}
+  .cta .btn{height:clamp(44px, 10vw, 48px);padding:0 clamp(14px, 6vw, 28px);font-size:14.5px;}
+
+  .stage{padding:0 14px;}
+  .editor{width:100%;aspect-ratio:auto;align-self:stretch;border-radius:7px 7px 0 0;}
+
+  .cell{padding:0 12px;}
   .cell img{max-height:34px;}
-  .cell--europa img{width:118px;}
-  .cell--eclipseful img{width:136px;}
-  .cell--ikigai img{width:162px;}
-  .cell--eightball img{width:121px;}
+  .cell--europa img{width:112px;}
+  .cell--eclipseful img{width:129px;}
+  .cell--ikigai img{width:154px;}
+  .cell--eightball img{width:115px;}
 }
 
-/* --- small phone -------------------------------------------------- */
-@media (max-width:460px){
-  :root{--pad-x:12px;--pad-t:12px;--pad-b:12px;--hdr-h:54px;--strip-h:96px;}
-  .header{padding:0 11px;gap:10px;}
-  .actions .btn--ghost{display:none;}   /* Sign In moves into the drawer */
+/* --- narrow phones: the header row finally runs out of space, so the
+       secondary action moves into the drawer. Measured: at 360 the bar
+       has 34px of slack left, at 320 only 11. ---------------------- */
+@media (max-width:360px){
+  .actions .btn--ghost{display:none;}
   .drawer a.drawer-cta{display:block;}
-  .btn{padding:0 16px;height:40px;font-size:13.5px;}
-  .copy{padding-left:12px;padding-right:12px;}
-  .cta{gap:8px;}
-  .cta .btn{height:44px;padding:0 22px;font-size:14px;}
-  .stage{padding:0 12px;}
-  .cell--europa img{width:104px;}
-  .cell--eclipseful img{width:120px;}
-  .cell--ikigai img{width:143px;}
-  .cell--eightball img{width:107px;}
 }
 
 @media (prefers-reduced-motion:reduce){
