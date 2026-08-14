@@ -568,13 +568,18 @@ h1 .dim{color:var(--muted);}
   .brand svg{width:32px;height:32px;}
 
   /* touch-sized controls, same shapes */
-  .btn{height:38px;min-width:0;padding:0 20px;font-size:13px;}
-  .cta{margin-top:18px;gap:8px;}
-  .cta .btn{height:42px;min-width:0;padding:0 24px;font-size:13.5px;}
+  .btn{height:42px;min-width:0;padding:0 22px;font-size:14px;}
+  .cta{margin-top:22px;gap:10px;}
+  .cta .btn{height:48px;min-width:0;padding:0 28px;font-size:15px;}
 
-  /* hero: headline holds the size it had at the breakpoint */
-  h1{font-size:clamp(22px, 7.4vw, 36px);letter-spacing:-0.03em;line-height:1.09;}
-  .sub{max-width:min(27.9365em, 84%);}
+  /* Hero type is re-scaled for the tablet rather than inherited from the
+     desktop's proportional scale. At 1024 that scale gives a 36px
+     headline and 12.5px support copy - proportionally faithful, but a
+     tablet is read at desktop distance on a smaller canvas, so the
+     headline needs to claim ~54% of the frame instead of 40%, and the
+     support copy needs a real reading size. */
+  h1{font-size:clamp(34px, calc(22px + 2.5vw), 48px);letter-spacing:-0.03em;line-height:1.09;}
+  .sub{max-width:min(27.9365em, 84%);margin-top:10px;font-size:clamp(14px, 1.45vw, 16px);line-height:1.42;}
   .copy{padding-left:20px;padding-right:20px;}
   .lead{min-height:30px;}
   .gutter{min-height:22px;}
@@ -618,7 +623,8 @@ h1 .dim{color:var(--muted);}
   .header{padding:0 14px;}
   .brand svg{width:30px;height:30px;}
   .copy{padding-left:16px;padding-right:16px;}
-  .sub{margin-top:10px;font-size:13.5px;line-height:1.4;max-width:min(26em,90%);}
+  h1{font-size:clamp(26px, 6.05vw, 37.5px);}
+  .sub{margin-top:10px;font-size:14px;line-height:1.42;max-width:min(26em,90%);}
   .stage{padding:0 16px;}
   .editor{width:100%;border-radius:7px 7px 0 0;}
   .cell img{max-height:34px;}
@@ -634,10 +640,10 @@ h1 .dim{color:var(--muted);}
   .header{padding:0 11px;gap:10px;}
   .actions .btn--ghost{display:none;}   /* Sign In moves into the drawer */
   .drawer a.drawer-cta{display:block;}
-  .btn{padding:0 16px;height:36px;}
+  .btn{padding:0 16px;height:40px;font-size:13.5px;}
   .copy{padding-left:12px;padding-right:12px;}
   .cta{gap:8px;}
-  .cta .btn{height:40px;padding:0 18px;font-size:13px;}
+  .cta .btn{height:44px;padding:0 22px;font-size:14px;}
   .stage{padding:0 12px;}
   .cell--europa img{width:104px;}
   .cell--eclipseful img{width:120px;}
