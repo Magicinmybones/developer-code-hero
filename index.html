@@ -688,10 +688,71 @@ h1 .dim{color:var(--muted);}
   .drawer a.drawer-cta{display:block;}
 }
 
+/* ================================================================== *
+ *  ENTRANCE
+ *  Runs once, on load, and then the page is completely static - no
+ *  scroll triggers, no hover motion, no loops, nothing left running.
+ *
+ *  The frame, its hairlines, the hatch rules and the plus grid are the
+ *  stage: they are present in the first painted frame and never move.
+ *  Only foreground content performs.
+ *
+ *  Four behaviours, chosen from the design's own vocabulary:
+ *    A  masked line reveal   - the headline, whose two stacked lines are
+ *                              the composition's spine
+ *    B  supporting lift      - nav, copy, CTAs, wordmarks: a few px of
+ *                              travel and opacity, nothing more
+ *    C  registration settle  - the brand mark scales in like a drawing
+ *                              being registered on the sheet
+ *    D  rise into the clip   - the preview is anchored under the hero's
+ *                              bottom rule, so it enters from beneath it
+ *                              and the existing overflow does the masking
+ *
+ *  The customer wordmarks are deliberately still. They are the quietest
+ *  band in the composition and sit below the hero's closing rule, so they
+ *  read as part of the frame's furniture rather than as content that
+ *  performs; the preview rising directly above them already carries the
+ *  motion at the bottom of the page. Leaving them alone also keeps them
+ *  off the compositor, which is what guarantees the final frame is
+ *  byte-identical to the static design.
+ * ------------------------------------------------------------------ */
+:root{--lift:10px;--rise:22px;}
+@media (max-width:1040px){:root{--lift:9px;--rise:18px;}}
+@media (max-width:470px){:root{--lift:7px;--rise:14px;}}
+
+/* the mask for behaviour A. padding-bottom gives the descender in
+   "Developers" room inside the clip; the negative margin removes that
+   padding from the flow again, so the headline box is byte-identical. */
+h1 .ln{display:block;overflow:hidden;
+  /* padding gives the descender in "Developers" and the glyph overhang
+     on the final letter room inside the clip; the matching negative
+     margins take it straight back out of the flow, so the headline box
+     and every line position are unchanged. */
+  padding:0 .14em .2em;margin:0 -.14em -.2em;}
+h1 .ln-i{display:block;}
+
+/* Pre-animation states. Applied by an inline head script, so they exist
+   before first paint (no flash) - and if scripting is off the class is
+   never added and every element simply renders normally. */
+.js-anim .brand svg,
+.js-anim .nav a,
+.js-anim .actions > *,
+.js-anim .sub,
+.js-anim .cta .btn,
+.js-anim .editor,
+.js-anim h1 .ln-i{transform:translateY(130%);}
+
 @media (prefers-reduced-motion:reduce){
   *{transition-duration:0.01ms !important;animation-duration:0.01ms !important;}
 }
 </style>
+<script>
+/* Flag the document before first paint so the entrance has somewhere to
+   start from. Skipped entirely for reduced-motion users, and never added
+   at all without scripting - in both cases the page renders as-is. */
+(function(){var m=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)');
+if(!(m&&m.matches))document.documentElement.className+=' js-anim';})();
+</script>
 </head>
 <body>
 
@@ -738,7 +799,7 @@ h1 .dim{color:var(--muted);}
   <main class="hero">
     <div class="lead" aria-hidden="true"></div>
     <div class="copy">
-      <h1>For Developers Who Swear<br><span class="dim">It Wasn&rsquo;t Their Fault</span></h1>
+      <h1><span class="ln"><span class="ln-i">For Developers Who Swear</span></span><span class="ln"><span class="ln-i dim">It Wasn&rsquo;t Their Fault</span></span></h1>
       <p class="sub">Your AI-powered code space that catches the obvious, the subtle, and the &ldquo;how did that even happen?&rdquo;</p>
       <div class="cta">
         <a class="btn btn--solid" href="#">Get Started</a>
@@ -810,6 +871,80 @@ export default function SyntaxUI() {
 </div>
 
 <script>
+/* ------------------------------------------------------------------ *
+ *  MASTER ENTRANCE TIMELINE  (ms)
+ *
+ *   80  brand mark registers
+ *  160  nav labels settle, 40ms apart
+ *  300  header actions follow the nav's tail
+ *  420  headline line 1 clears its mask
+ *  540  headline line 2 follows while line 1 is still resolving
+ *  780  supporting copy, as the headline settles
+ *  920  CTAs, once the message has landed
+ * 1020  the preview rises into its clip and completes the composition
+ * ~2.0s complete -> every animation object is cancelled and the page is
+ *                   static. No loop, no observer, no listener remains.
+ * ------------------------------------------------------------------ */
+(function(){
+  var root=document.documentElement;
+  if(root.className.indexOf('js-anim')<0) return;   /* reduced motion / no JS */
+  var ran=false;
+  function run(){
+    if(ran) return; ran=true;
+    var cs=getComputedStyle(root),
+        lift=parseFloat(cs.getPropertyValue('--lift'))||10,
+        rise=parseFloat(cs.getPropertyValue('--rise'))||22,
+        EXPO='cubic-bezier(.16,1,.3,1)',
+        SOFT='cubic-bezier(.22,.61,.24,1)',
+        live=[],cast=[];
+    function tw(el,frames,dur,delay,ease){
+      if(!el||!el.animate) return;
+      cast.push(el);
+      live.push(el.animate(frames,{duration:dur,delay:delay,
+        easing:ease||EXPO,fill:'backwards'}));
+    }
+    var up=function(px){return [{opacity:0,transform:'translateY('+px+'px)'},
+                                {opacity:1,transform:'none'}];};
+    var one=function(s){return document.querySelector(s);},
+        all=function(s){return [].slice.call(document.querySelectorAll(s));};
+
+    tw(one('.brand svg'),[{opacity:0,transform:'scale(.92)'},
+                          {opacity:1,transform:'none'}],560,80,SOFT);
+
+    all('.nav a').forEach(function(el,i){ tw(el,up(lift),500,160+i*40); });
+    all('.actions > *').forEach(function(el,i){ tw(el,up(lift),500,300+i*60); });
+
+    all('h1 .ln-i').forEach(function(el,i){
+      tw(el,[{transform:'translateY(130%)'},{transform:'none'}],950,420+i*120);
+    });
+
+    tw(one('.sub'),up(lift),620,780);
+    all('.cta .btn').forEach(function(el,i){ tw(el,up(lift),560,920+i*70); });
+    tw(one('.editor'),up(rise),1000,1020);
+
+    /* hand the pre-animation states over to the animations themselves */
+    root.className=root.className.replace(/\s*js-anim/,'');
+
+    /* When the last tween lands, detach everything so nothing stays live.
+       The no-op opacity write then invalidates paint on the cast, which
+       makes Chromium drop the compositor layers the entrance created and
+       re-rasterise exactly as it does on a cold, unanimated load. Both
+       values are 1, so it is invisible. */
+    Promise.all(live.map(function(a){return a.finished['catch'](function(){});}))
+      .then(function(){
+        live.forEach(function(a){a.cancel();}); live.length=0;
+        cast.forEach(function(el){el.style.opacity='1';});
+        requestAnimationFrame(function(){
+          cast.forEach(function(el){el.style.opacity='';}); cast.length=0;
+        });
+      });
+  }
+  if(document.fonts&&document.fonts.ready){
+    document.fonts.ready.then(function(){requestAnimationFrame(run);});
+  } else { addEventListener('load',run,{once:true}); }
+  setTimeout(run,1200);   /* never leave content hidden if the above stalls */
+})();
+
 (function(){
   var b=document.querySelector('.burger'),d=document.getElementById('drawer');
   if(!b||!d)return;
