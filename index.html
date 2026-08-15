@@ -128,8 +128,8 @@ body{
 }
 
 /* ------------------------------------------------------------------ *
- *  FRAME — one bordered column; every internal rule is a shared 1px
- *  hairline so no double borders ever appear.
+ *  FRAME — the side rule intentionally pauses across both hatch bands,
+ *  matching the segmented border in the reference.
  * ------------------------------------------------------------------ */
 .frame{
   flex:1 1 auto;
@@ -141,8 +141,14 @@ body{
   display:flex;
   flex-direction:column;
   background:var(--panel);
-  border:var(--hairline) solid var(--rule);
+  border-top:var(--hairline) solid var(--rule);
+  border-bottom:var(--hairline) solid var(--rule);
   overflow:hidden;
+}
+
+.header,.hero,.strip{
+  border-left:var(--hairline) solid var(--rule);
+  border-right:var(--hairline) solid var(--rule);
 }
 
 /* ================================================================== *
