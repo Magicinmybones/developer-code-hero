@@ -437,6 +437,11 @@ h1 .dim{color:var(--muted);}
   overflow:hidden;
   tab-size:2;
 }
+.ed-code .cl{display:block;}
+/* a blank line needs a real line box, not a computed height: a
+   zero-width space gives it exactly the same box the other lines get,
+   so the listing's total height is unchanged to the sub-pixel */
+.ed-code .cl:empty::after{content:"\200B";}
 .ed-code .lig{
   letter-spacing:0;                       /* re-enables JetBrains Mono's calt */
   margin-right:calc(0.38 * var(--e));     /* = 2 chars of the tracking above  */
@@ -716,9 +721,12 @@ h1 .dim{color:var(--muted);}
  *  off the compositor, which is what guarantees the final frame is
  *  byte-identical to the static design.
  * ------------------------------------------------------------------ */
-:root{--lift:10px;--rise:22px;}
+:root{--lift:10px;--rise:22px;--ed-detail:1;}
 @media (max-width:1040px){:root{--lift:9px;--rise:18px;}}
 @media (max-width:470px){:root{--lift:7px;--rise:14px;}}
+/* below this the panel is small enough that per-row detail is
+   invisible, so the panes populate as three groups instead */
+@media (max-width:620px){:root{--ed-detail:0;}}
 
 /* the mask for behaviour A. padding-bottom gives the descender in
    "Developers" room inside the clip; the negative margin removes that
@@ -832,27 +840,7 @@ if(!(m&&m.matches))document.documentElement.className+=' js-anim';})();
         <div class="ed-row ed-row--l1"><span class="chev"><svg viewBox="0 0 9 6" fill="none" aria-hidden="true"><path d="M1 1.2 4.5 4.6 8 1.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="ico"><svg viewBox="1 2 22 19" fill="none" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" stroke="currentColor" stroke-width="1.85" stroke-linejoin="round"/><path d="M2 10h20" stroke="currentColor" stroke-width="1.85" stroke-linecap="round"/></svg></span>.public</div>
           </div>
           <div class="ed-nums"><span>1</span><span>2</span><span>3</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span></div>
-          <pre class="ed-code"><span class="cm">// CSS Syntax Highlighter UI (Design Mock)</span>
-
-<span class="kw">import</span> React from <span class="st">"react"</span>;
-
-export default function SyntaxUI() {
-  const colors = {
-    arrow: <span class="st">"#<span class="hx">d9b3ff</span>"</span>,
-    values: <span class="st">"#<span class="hx">8cd9ff</span>"</span>,
-    integer: <span class="st">"#<span class="hx">ffb399</span>"</span>,
-    text: <span class="st">"#<span class="hx">ff9966</span>"</span>,
-    digit: <span class="st">"#<span class="hx">99cc99</span>"</span>,
-    title: <span class="st">"#<span class="hx">80b380</span>"</span>,
-  };
-
-  return (
-    &lt;div style={{ fontFamily: <span class="st">"monospace"</span>, padding: 20 }}&gt;
-      &lt;h3&gt;CSS Highlighter&lt;/h3&gt;
-
-      {Object.entries(colors).map(([key, color]) <span class="lig">=&gt;</span> (
-        &lt;div key={key} style={{ display: <span class="st">"flex"</span>, alignItems: <span class="st">"center"</span>, marginBottom: 8 }}&gt;
-          &lt;span style={{ width: 100 }}&gt;{key}&lt;/span&gt;</pre>
+          <pre class="ed-code"><span class="cl"><span class="cm">// CSS Syntax Highlighter UI (Design Mock)</span></span><span class="cl"></span><span class="cl"><span class="kw">import</span> React from <span class="st">"react"</span>;</span><span class="cl"></span><span class="cl">export default function SyntaxUI() {</span><span class="cl">  const colors = {</span><span class="cl">    arrow: <span class="st">"#<span class="hx">d9b3ff</span>"</span>,</span><span class="cl">    values: <span class="st">"#<span class="hx">8cd9ff</span>"</span>,</span><span class="cl">    integer: <span class="st">"#<span class="hx">ffb399</span>"</span>,</span><span class="cl">    text: <span class="st">"#<span class="hx">ff9966</span>"</span>,</span><span class="cl">    digit: <span class="st">"#<span class="hx">99cc99</span>"</span>,</span><span class="cl">    title: <span class="st">"#<span class="hx">80b380</span>"</span>,</span><span class="cl">  };</span><span class="cl"></span><span class="cl">  return (</span><span class="cl">    &lt;div style={{ fontFamily: <span class="st">"monospace"</span>, padding: 20 }}&gt;</span><span class="cl">      &lt;h3&gt;CSS Highlighter&lt;/h3&gt;</span><span class="cl"></span><span class="cl">      {Object.entries(colors).map(([key, color]) <span class="lig">=&gt;</span> (</span><span class="cl">        &lt;div key={key} style={{ display: <span class="st">"flex"</span>, alignItems: <span class="st">"center"</span>, marginBottom: 8 }}&gt;</span><span class="cl">          &lt;span style={{ width: 100 }}&gt;{key}&lt;/span&gt;</span></pre>
         </div>
       </div>
     </div>
@@ -881,8 +869,13 @@ export default function SyntaxUI() {
  *  540  headline line 2 follows while line 1 is still resolving
  *  780  supporting copy, as the headline settles
  *  920  CTAs, once the message has landed
- * 1020  the preview rises into its clip and completes the composition
- * ~2.0s complete -> every animation object is cancelled and the page is
+ * 1000  the preview rises into its clip - an empty window
+ * 1180  its traffic lights come on, 45ms apart
+ * 1260  the project block and open tab settle
+ * 1360  the file tree populates top-down, 38ms a row
+ * 1440  the line-number column fades in as one column of tick marks
+ * 1480  the listing writes itself downward, 28ms a line
+ * ~2.4s complete -> every animation object is cancelled and the page is
  *                   static. No loop, no observer, no listener remains.
  * ------------------------------------------------------------------ */
 (function(){
@@ -920,7 +913,31 @@ export default function SyntaxUI() {
 
     tw(one('.sub'),up(lift),620,780);
     all('.cta .btn').forEach(function(el,i){ tw(el,up(lift),560,920+i*70); });
-    tw(one('.editor'),up(rise),1000,1020);
+    /* The window arrives empty - panel, rules and pane dividers only -
+       then its panes populate left to right and the listing writes
+       itself downward. Below 620px the panel is too small for per-row
+       detail to read, so each pane comes in as one group instead. */
+    var detail=parseFloat(cs.getPropertyValue('--ed-detail'))||0,
+        st=function(ms){return detail?ms:0;};
+
+    tw(one('.editor'),up(rise),660,1000);
+
+    all('.ed-chrome i').forEach(function(el,i){
+      tw(el,[{opacity:0,transform:'scale(.72)'},{opacity:1,transform:'none'}],
+         340,1180+i*45,SOFT);
+    });
+    [one('.ed-eyebrow'),one('.ed-project'),one('.ed-tab')].forEach(function(el,i){
+      tw(el,up(6),420,1260+i*55);
+    });
+    all('.ed-row').forEach(function(el,i){
+      tw(el,up(5),380,1360+st(i*38));
+    });
+    all('.ed-nums span').forEach(function(el){
+      tw(el,[{opacity:0},{opacity:1}],420,1440);
+    });
+    all('.ed-code .cl').forEach(function(el,i){
+      tw(el,up(4),340,1480+st(i*28));
+    });
 
     /* hand the pre-animation states over to the animations themselves */
     root.className=root.className.replace(/\s*js-anim/,'');
